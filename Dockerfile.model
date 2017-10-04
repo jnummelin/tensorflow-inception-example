@@ -1,0 +1,14 @@
+FROM bitnami/tensorflow-inception:latest as model-builder
+
+RUN mkdir -p /model-data/ && \
+    curl -o '/model-data/inception-v3-2016-03-01.tar.gz' 'http://download.tensorflow.org/models/image/imagenet/inception-v3-2016-03-01.tar.gz' && \
+    cd /model-data && tar zxf inception-v3-2016-03-01.tar.gz
+
+RUN inception_saved_model --checkpoint_dir=/model-data/inception-v3 --output_dir=/model-data/inception-export
+
+
+FROM bitnami/tensorflow-serving:latest
+
+COPY --from=model-builder /model-data/inception-export/* /bitnami/model-data/1
+
+
